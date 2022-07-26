@@ -1,6 +1,10 @@
-# DeepLabv3Plus-Pytorch
+# DeepLabv3Plus-Pytorch-ade20k
+DeepLabv3, DeepLabv3+ with pretrained models for Pascal VOC & Cityscapes & ade20k
 
-DeepLabv3, DeepLabv3+ with pretrained models for Pascal VOC & Cityscapes.
+# Reference Repository
+
+[DeepLabv3Plus-Pytorch](https://github.com/VainF/DeepLabV3Plus-Pytorch).
+
 
 ## Quick Start 
 
@@ -215,13 +219,49 @@ python main.py --model deeplabv3plus_mobilenet --enable_vis --vis_port 28333 --g
         /cityscapes
             /gtFine
             /leftImg8bit
-```
+
+```     
 
 ### 2. Train your model on Cityscapes
 
 ```bash
 python main.py --model deeplabv3plus_mobilenet --dataset cityscapes --enable_vis --vis_port 28333 --gpu_id 0  --lr 0.1  --crop_size 768 --batch_size 16 --output_stride 16 --data_root ./datasets/data/cityscapes 
 ```
+
+## Ade20k
+
+### 1. Download Dataset
+```bash
+cd deeplabv3_pytorch-ade20k
+chmod +x download_ADE20K.sh
+./download_ADE20K.sh
+```
+
+### 2. Extract it to 'datasets/data/ade20k'
+
+
+```
+/datasets
+    /data
+        /ade20k
+            /ADEChallengeData2016
+                /annotations
+                    /training
+                    /validation
+                /images
+                    /training
+                    /validation
+                /objectInfo150.txt
+                /sceneCategories.txy
+```
+
+### 3. Train your model on Ade20k
+
+```bash
+cd deeplabv3_pytorch-ade20k
+python3 main.py --dataset ade20k
+```
+
 
 ## Reference
 
