@@ -79,6 +79,7 @@ class ADE20KSegmentation(data.Dataset):
 
     def class_changer(self, mask):
         num_mask = np.array(mask)
+
         # changed wall 1 <- 9,15,33,43,44,145
         np.place(num_mask, ((num_mask == 9) | (num_mask == 15) | (num_mask == 33) | (num_mask == 43) | (num_mask == 44) | (num_mask == 145) ), 1)
         # changed floor 4 <- 7,14,30,53,55
@@ -91,7 +92,16 @@ class ADE20KSegmentation(data.Dataset):
         np.place(num_mask, (num_mask == 54), 7)
         # changed other 26
         np.place(num_mask, ((num_mask != 0) & (num_mask != 1) & (num_mask != 4) & (num_mask != 5) & (num_mask != 7) & (num_mask != 8)), 26)
-        
+        '''
+        np.place(num_mask, (num_mask == 1), 1)
+        np.place(num_mask, (num_mask == 4), 2)
+        np.place(num_mask, (num_mask == 5), 3)
+        np.place(num_mask, (num_mask == 8), 4)
+        np.place(num_mask, (num_mask == 7), 5)
+        np.place(num_mask, (num_mask == 26), 0)
+        '''
+        print(num_mask)
+
         pil_mask = Image.fromarray(num_mask)
         
         return pil_mask
@@ -105,10 +115,39 @@ class ADE20KSegmentation(data.Dataset):
         """
         img = Image.open(self.images[index]).convert('RGB')
         target = Image.open(self.masks[index])
+        '''
+        num_mask = np.array(target)
+        #print(num_mask)
+        
+        ##if self.dram_class is True:
+        #target = self.class_changer(target)
+        num_mask = np.array(target)
+        # changed wall 1 <- 9,15,33,43,44,145
+        np.place(num_mask, ((num_mask == 9) | (num_mask == 15) | (num_mask == 33) | (num_mask == 43) | (num_mask == 44) | (num_mask == 145) ), 1)
+        # changed floor 4 <- 7,14,30,53,55
+        np.place(num_mask, ((num_mask == 7) | (num_mask == 14) | (num_mask == 30) | (num_mask == 53) | (num_mask == 55)), 4)
+        # changed tree 5 <- 8,11,14,16,19,20,25,34
+        np.place(num_mask, (num_mask == 18), 5) 
+        # changed furniture 8 <- 8,11,14,16,19,20,25,34
+        np.place(num_mask, ((num_mask == 11) | (num_mask == 14) | (num_mask == 16) | (num_mask == 19) | (num_mask == 20) | (num_mask == 25) | (num_mask == 34)), 8)
+        # changed stairs 7 <- 54
+        np.place(num_mask, (num_mask == 54), 7)
+        # changed other 26
+        np.place(num_mask, ((num_mask != 0) & (num_mask != 1) & (num_mask != 4) & (num_mask != 5) & (num_mask != 7) & (num_mask != 8)), 26)
+        
+        np.place(num_mask, (num_mask == 1), 1)
+        np.place(num_mask, (num_mask == 4), 2)
+        np.place(num_mask, (num_mask == 5), 3)
+        np.place(num_mask, (num_mask == 8), 4)
+        np.place(num_mask, (num_mask == 7), 5)
+        np.place(num_mask, (num_mask == 26), 0)
+        '''
+        #print("change")
 
-        if self.dram_class is True:
-            target = self.class_changer(target)
+        #print(num_mask)
 
+        target = Image.fromarray(num_mask)
+        
         if self.transform is not None:
             img, target = self.transform(img, target)
 

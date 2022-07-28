@@ -59,9 +59,9 @@ def get_argparser():
     parser.add_argument("--step_size", type=int, default=10000)
     parser.add_argument("--crop_val", action='store_true', default=False,
                         help='crop validation (default: False)')
-    parser.add_argument("--batch_size", type=int, default=16,
-                        help='batch size (default: 16)')
-    parser.add_argument("--val_batch_size", type=int, default=4,
+    parser.add_argument("--batch_size", type=int, default=2,
+                        help='batch size (default: 4)')
+    parser.add_argument("--val_batch_size", type=int, default=2,
                         help='batch size for validation (default: 4)')
     parser.add_argument("--crop_size", type=int, default=513)
 
@@ -158,8 +158,9 @@ def get_dataset(opts):
     if opts.dataset == 'ade20k':
         print("ade20k datasets")
         train_transform = et.ExtCompose([
+            et.ExtResize((512, 512)),
             # et.ExtResize(size=opts.crop_size),
-            et.ExtRandomScale((0.5, 2.0)),
+            # et.ExtRandomScale((0.5, 2.0)),
             et.ExtRandomCrop(size=(opts.crop_size, opts.crop_size), pad_if_needed=True),
             et.ExtRandomHorizontalFlip(),
             et.ExtToTensor(),
@@ -168,6 +169,7 @@ def get_dataset(opts):
         ])
         if opts.crop_val:
             val_transform = et.ExtCompose([
+                et.ExtResize((512, 512)),
                 et.ExtResize(opts.crop_size),
                 et.ExtCenterCrop(opts.crop_size),
                 et.ExtToTensor(),
@@ -176,6 +178,8 @@ def get_dataset(opts):
             ])
         else:
             val_transform = et.ExtCompose([
+                et.ExtResize((512, 512)),
+
                 et.ExtToTensor(),
                 et.ExtNormalize(mean=[0.485, 0.456, 0.406],
                                 std=[0.229, 0.224, 0.225]),
@@ -201,8 +205,11 @@ def validate(opts, model, loader, device, metrics, ret_samples_ids=None):
         img_id = 0
 
     with torch.no_grad():
-        for i, (images, labels) in tqdm(enumerate(loader)):
 
+        for i, (images, labels) in tqdm(enumerate(loader)):
+            #print(images.shape)
+            #print(labels.shape)
+            
             images = images.to(device, dtype=torch.float32)
             labels = labels.to(device, dtype=torch.long)
 
@@ -252,9 +259,9 @@ def main():
         opts.num_classes = 19
     elif opts.dataset.lower() == 'ade20k':
         if opts.dram_class == True:
-            opts.num_classes = 7
+            opts.num_classes = 6
         else:    
-            opts.num_classes = 150
+            opts.num_classes = 151
 
     # Setup visualization
     vis = Visualizer(port=opts.vis_port,
@@ -277,10 +284,10 @@ def main():
 
     train_dst, val_dst = get_dataset(opts)
     train_loader = data.DataLoader(
-        train_dst, batch_size=opts.batch_size, shuffle=True, num_workers=2,
+        train_dst, batch_size=opts.batch_size, shuffle=True, num_workers=0,
         drop_last=True)  # drop_last=True to ignore single-image batches.
     val_loader = data.DataLoader(
-        val_dst, batch_size=opts.val_batch_size, shuffle=True, num_workers=2)
+        val_dst, batch_size=opts.val_batch_size, shuffle=True, num_workers=0)
     print("Dataset: %s, Train set: %d, Val set: %d" %
           (opts.dataset, len(train_dst), len(val_dst)))
 
@@ -373,9 +380,12 @@ def main():
 
             optimizer.zero_grad()
             outputs = model(images)
+            #labels = labels - 1
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
+            #print(labels.type())
+            #print(labels)
 
             np_loss = loss.detach().cpu().numpy()
             interval_loss += np_loss
@@ -393,6 +403,7 @@ def main():
                           (opts.model, opts.dataset, opts.output_stride))
                 print("validation...")
                 model.eval()
+                print(vis_sample_id)
                 val_score, ret_samples = validate(
                     opts=opts, model=model, loader=val_loader, device=device, metrics=metrics,
                     ret_samples_ids=vis_sample_id)

@@ -8,7 +8,7 @@ import argparse
 import numpy as np
 
 from torch.utils import data
-from datasets import VOCSegmentation, Cityscapes, cityscapes
+from datasets import VOCSegmentation, Cityscapes, cityscapes, ADE20KSegmentation
 from torchvision import transforms as T
 from metrics import StreamSegMetrics
 
@@ -29,7 +29,7 @@ def get_argparser():
     parser.add_argument("--input", type=str, required=True,
                         help="path to a single image or image directory")
     parser.add_argument("--dataset", type=str, default='voc',
-                        choices=['voc', 'cityscapes'], help='Name of training set')
+                        choices=['voc', 'cityscapes', 'ade20k'], help='Name of training set')
 
     # Deeplab Options
     available_models = sorted(name for name in network.modeling.__dict__ if name.islower() and \
@@ -42,6 +42,9 @@ def get_argparser():
     parser.add_argument("--separable_conv", action='store_true', default=False,
                         help="apply separable conv to decoder and aspp")
     parser.add_argument("--output_stride", type=int, default=16, choices=[8, 16])
+
+    parser.add_argument("--dram_class", type=bool, default=False,
+                        help="ade20k class num 150 -> 7")
 
     # Train Options
     parser.add_argument("--save_val_results_to", default=None,
@@ -73,6 +76,14 @@ def main():
     elif opts.dataset.lower() == 'cityscapes':
         opts.num_classes = 19
         decode_fn = Cityscapes.decode_target
+    elif opts.dataset.lower() == 'ade20k':
+        if opts.dram_class == True:
+            opts.num_classes = 6
+            decode_fn = ADE20KSegmentation.decode_target
+        else:
+            opts.num_classes = 151
+            decode_fn = ADE20KSegmentation.decode_target
+
 
     os.environ['CUDA_VISIBLE_DEVICES'] = opts.gpu_id
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
