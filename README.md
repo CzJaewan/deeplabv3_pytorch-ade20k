@@ -259,9 +259,19 @@ chmod +x download_ADE20K.sh
 
 ```bash
 cd deeplabv3_pytorch-ade20k
-python3 main.py --dataset ade20k
+python3 main.py --dataset ade20k --gpu 0 --lr 0.05
 ```
 
+### 4. Test your model on Ade20k(vedio)
+```bash
+cd deeplabv3_pytorch-ade20k
+python predict.py --input ~/deeplabv3/deeplabv3_pytorch-ade20k/input/syscon2.mov --input_type video --dataset ade20k --model deeplabv3plus_mobilenet --ckpt checkpoints/best_deeplabv3plus_mobilenet_ade20k_os16.pth --save_val_results_to test_results/220728_syscon
+```
+
+### 5. Test your model on Ade20k(vedio)
+```bash
+cd deeplabv3_pytorch-ade20k
+python predict.py --input /home/jaewan/deeplabv3/DeepLabV3Plus-Pytorch/input/syscon.jpg --dataset ade20k --model deeplabv3plus_mobilenet --ckpt checkpoints/best_deeplabv3plus_mobilenet_ade20k_os16.pth --save_val_results_to test_results/220728_syscon```
 
 ## Reference
 
